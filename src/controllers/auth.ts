@@ -31,12 +31,6 @@ export const register = async (req: Request, res: Response) => {
 
   const token = generateToken({ id: user.id, role: RoleEnum[2] });
 
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-  });
-
   return res
     .status(200)
     .json({ message: "User created successfully" });
