@@ -75,7 +75,7 @@ export const login = async (req: Request, res: Response) => {
       secure: true,
       sameSite: 'none',
     });
-    return res.status(200).json({ message: "Login Successfully" });
+    return res.status(200).json({ message: "Login Successfully", token });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
