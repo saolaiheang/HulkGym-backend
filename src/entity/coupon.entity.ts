@@ -14,7 +14,7 @@ export class Coupon {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID as a primary key
 
-    @OneToOne(() => UserInfo, (user) => user.coupons)
+    @OneToOne(() => UserInfo, (user) => user.Coupons)
     @JoinColumn({ name: 'userId' })
     user: UserInfo; // Relationship with UserInfo entity
 
