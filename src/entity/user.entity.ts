@@ -6,9 +6,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from "typeorm";
 import { RoleEnum } from "../common/types/enum";
 import { Activity } from "./activity.entity";
+import { Coupon } from "./coupon.entity"; // Import Coupon entity
 
 @Entity({ name: "user_info" })
 export class UserInfo {
@@ -43,4 +45,7 @@ export class UserInfo {
 
   @OneToMany(() => Activity, (activity) => activity.user)
   activities: Activity[]; // One user can have many activities
+
+  @OneToOne(() => Coupon, (coupon) => coupon.user) // Fix relationship
+  coupons: Coupon[];
 }

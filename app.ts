@@ -11,6 +11,7 @@ import bodyParser from "body-parser";
 import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
+import coupon from "./src/routes/coupon"
 import axios from "axios";
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -34,6 +35,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
+app.use("/api/coupon",coupon)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });

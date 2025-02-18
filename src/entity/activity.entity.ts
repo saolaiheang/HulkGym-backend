@@ -8,7 +8,6 @@ import {
     UpdateDateColumn,
   } from 'typeorm';
   import { UserInfo } from './user.entity'; // Assuming UserInfo entity is in user.entity.ts
-  
   @Entity('activity')
   export class Activity {
     @PrimaryGeneratedColumn('uuid')
