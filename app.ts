@@ -12,7 +12,9 @@ import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
 import Promotion from "./src/routes/promotion";
-import coupon from "./src/routes/coupon"
+import coupon from "./src/routes/coupon";
+import workoutPlan from "./src/routes/workout_plan"
+
 
 import axios from "axios";
 
@@ -38,8 +40,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
 app.use("/api/promotion", Promotion);
-app.use("/api/coupon",coupon)
 
+app.use("/api/coupon", coupon);
+app.use("/api/workout", workoutPlan)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -87,9 +90,11 @@ bot.onText(/\/contact/, (msg) => {
 });
 
 bot.onText(/\/promotion/, (msg) => {
+
+
   bot.sendMessage(
     msg.chat.id,
-    "Check out our latest promotions at https://example.com/promotions"
+    "ABC"
   );
 });
 
@@ -103,7 +108,7 @@ bot.onText(/\/feedback/, (msg) => {
 // Handle /image command
 bot.onText(/\/image/, (msg) => {
   bot.sendPhoto(msg.chat.id, "https://picsum.photos/seed/picsum/200/300", {
-    caption: "Here is an image for you!",
+    caption: "Here is an image for you\nNew Line abc\nkkjkj!",
   });
 });
 
