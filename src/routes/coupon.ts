@@ -1,14 +1,14 @@
-// import { Router } from "express";
-import {Router} from "express"
-import { PostDataCoupon } from "../controllers/coupon.controller";
-// import protectRoute from "../middleware/auth";
-
+import { Router } from "express";
+import protectRoute from "../middleware/auth";
+import { RoleEnum } from "../common";
+import { deleteDataCoupon, getDataByIdCoupon, getDataCoupon, PostDataCoupon, updateDataCoupon } from "../controllers/coupon.controller";
 
 const router = Router();
 
-router.post("/add", PostDataCoupon);
-
-// coupon.post("/create",createcoupon);
-// coupon.post("/create",createcoupon),
+router.post("/add/new", PostDataCoupon);
+router.get("/all", getDataCoupon);
+router.get("/:id", getDataByIdCoupon);
+router.put("/:id", updateDataCoupon);
+router.delete("/:id", deleteDataCoupon)
 
 export default router;

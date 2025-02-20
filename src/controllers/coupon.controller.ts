@@ -1,33 +1,24 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../config";
 import { Coupon } from "../entity/coupon.entity";
-import { UserInfo } from "../entity/user.entity";
 
 
 export const PostDataCoupon = async (req: Request, res: Response) => {
     const userRepo = AppDataSource.getRepository(Coupon);
-    const userInfoId = AppDataSource.getRepository(UserInfo);
-    const { userId, discount, expiry_date, status } = req.body;
-    const user = await userInfoId.findOne({ where: { id: req.user?.id } });
-
-    if (!userId) {
-        console.log('User not found. Please ensure a user exists.');
-        return;
-    }
-
-    if (!user) {
-        return res.status(500).json({
+    const { title, offer, valid_until, terms, status } = req.body;
+    
+    if (!title || !offer) {
+        return res.status(404).json({
             message: "something wrong",
         });
     }
 
-
-
     const coupon = new Coupon();
-    userId.userId = user,
-        discount.discount = discount
-    expiry_date.expiry_date = expiry_date
-    status.status = status
+    coupon.title = title
+    coupon.offer = offer
+    coupon.valid_until = valid_until
+    coupon.terms = terms
+    coupon.status = status
 
     await userRepo.save(coupon);
 
@@ -35,3 +26,56 @@ export const PostDataCoupon = async (req: Request, res: Response) => {
         .status(200)
         .json({ message: "User created successfully" });
 };
+
+export const getDataCoupon = async (req: Request, res: Response) => {
+
+    const userRepo = AppDataSource.getRepository(Coupon);
+    try{
+        const coupon = await userRepo.find();
+        res.status(201).json(coupon);
+
+    }catch(err){
+        res.status(500).json({message: "Internal server not found."})
+    }
+
+}
+
+export const getDataByIdCoupon = async (req: Request, res: Response) => {
+
+    const userRepo = AppDataSource.getRepository(Coupon);
+    const id = req.params.id;
+    try{
+        const coupon = await userRepo.findBy({ id: id });
+        res.status(200).json(coupon);
+    }catch(err){
+        res.status(500).json({message: "Internal server not found."})
+    }
+}
+
+export const updateDataCoupon = async (req: Request, res: Response) => {
+
+    const userRepo = AppDataSource.getRepository(Coupon);
+    const id = req.params.id;
+    const updateData = req.body;
+    try{
+        const coupon = await userRepo.findBy({id: id});
+        await userRepo.update(id, updateData);
+        res.status(200).json({message: "Update succes...."})
+    }catch(err){
+        res.status(500).json({message: "Internal server not found."})
+    }
+}
+
+export const deleteDataCoupon = async (req: Request, res: Response) => {
+
+    const userRepo = AppDataSource.getRepository(Coupon);
+    const id = req.params.id;
+    try{
+
+        const coupon = await userRepo.findBy({id: id});
+        await userRepo.delete(id);
+        res.status(200).json({message: "Delete succes...."})
+    }catch(err){
+        res.status(500).json({message: "Internal server not found."})
+    }
+}
