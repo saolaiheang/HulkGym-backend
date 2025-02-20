@@ -2,7 +2,9 @@ services:
   backend:
     build: .
     ports:
+
       - "3001:3000"
+
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -25,6 +27,7 @@ services:
       - "5439:5432"
     volumes:
       - postgres-data1:/var/lib/postgresql/data
+
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -41,8 +44,10 @@ services:
     depends_on:
       - database
     volumes:
+
       - pgadmin-data1:/var/lib/pgadmin
 
 volumes:
   postgres-data1:
   pgadmin-data1:
+
