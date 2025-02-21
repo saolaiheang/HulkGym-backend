@@ -11,7 +11,8 @@ import bodyParser from "body-parser";
 import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
-import Promotion from "./src/routes/promotion";
+import Promotions from "./src/routes/promotion";
+import { Promotion } from "./src/entity/promotion.entity";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan"
 
@@ -39,7 +40,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
-app.use("/api/promotion", Promotion);
+app.use("/api/promotion", Promotions);
 
 app.use("/api/coupon", coupon);
 app.use("/api/workout", workoutPlan)
@@ -89,13 +90,30 @@ bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
 });
 
-bot.onText(/\/promotion/, (msg) => {
-
-
-  bot.sendMessage(
-    msg.chat.id,
-    "ABC"
-  );
+bot.onText(/\/promotion/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Promotion);
+  try {
+    const promotion = await userRepo.find({
+      order: { created_at: "DESC" }
+    })
+    if (promotion.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branch found.");
+    }
+    const promotions = promotion.map(
+      (promotion, index) =>
+        `🔥 Promotion ${index + 1} 🔥\n` +
+        `🏷️ *${promotion.title}*\n` +
+        `💬 ${promotion.offer_description}\n` +
+        `🎯 Discount: ${promotion.discount_percentage}%\n` +
+        `⏳ Valid Until: ${promotion.valid_until}\n`
+    ).join('\n\n\n');
+    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
+      { caption: `${promotions}` }
+    )
+  } catch (err) {
+    console.error("Error fetching branches", err)
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
+  }
 });
 
 bot.onText(/\/feedback/, (msg) => {
