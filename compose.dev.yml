@@ -3,7 +3,9 @@ services:
     build: .
     ports:
 
+
       - "3308:3000"
+
 
     environment:
       DB_HOST: ${DB_HOST}

@@ -43,29 +43,35 @@ INSERT INTO public.workout_plan(
 	 ('Seated Calf Raises','5 sets',3,'15 reps (~30-50 calories)'),
 	 ('Hanging Leg Raise','4 sets',3,'15 reps (~30-50 calories)')
 
-
+INSERT INTO public.workout(
+	 name, "workoutPlanId")
+	VALUES('Chest & Back (Push-Pull Power) 🔥',2 ),
+        ('Arms & Shoulders 💪',2),
+        ( 'Legs & Core 🏋️‍♂️' ,2)
 
 INSERT INTO public.workout(
 	 name, "workoutPlanId")
-	VALUES ( 'Strength & Power Training 💪',2 ),
-	('Upper Body – Arms & Shoulders 💥',2),
-	('Forearms & Grip Strength 🏆',2),
-	('Core & Conditioning 🏃‍♂️🔥',2),
+	VALUES ( 'Strength & Power Training 💪',3),
+	('Upper Body – Arms & Shoulders 💥',3),
+	('Forearms & Grip Strength 🏆',3),
+	('Core & Conditioning 🏃‍♂️🔥',3),
 	INSERT INTO public.workout(name, "workoutPlanId")
 VALUES 
-    ('Strength Training (Full Body) 💪', 3),
-    ('Core & Conditioning 🏋️', 3),
-    ('Upper Body & Arms 💥', 3),
-    ('Cardio & Conditioning 🏃‍♂️🔥', 3),
-    ('Cool Down & Stretching 🧘', 3)
+    ('Strength Training (Full Body) 💪', 4),
+    ('Core & Conditioning 🏋️', 4),
+    ('Upper Body & Arms 💥', 4),
+    ('Cardio & Conditioning 🏃‍♂️🔥', 4),
+    ('Cool Down & Stretching 🧘', 4)
 
 
 	INSERT INTO public.workout (name, "workoutPlanId") 
 VALUES 
-('Strength & Power 💪', 4),
-('Core & Stability 🏋️‍♂️', 4),
-('Endurance & Cardio 🏃‍♂️🔥', 4),
-('Cool Down & Mobility 🧘', 4)
+
+('Strength & Power 💪', 5),
+('Core & Stability 🏋️‍♂️', 5),
+('Endurance & Cardio 🏃‍♂️🔥', 5),
+('Cool Down & Mobility 🧘', 5)
+
 
 
 INSERT INTO public.exercise(
