@@ -36,3 +36,8 @@ INSERT INTO public.branch_contact(
 	VALUES ('011 888 2233', 'bb6eed91-7076-4f07-b658-a8dbb6e04948');
   VALUES ('093 999 1122', 'bb6eed91-7076-4f07-b658-a8dbb6e04948');
 	VALUES ('069 333 5544', 'bb6eed91-7076-4f07-b658-a8dbb6e04948');
+
+
+UPDATE branch_contact 
+SET "branchId" = 'b06f1dcc-3526-485f-b45d-c2562669ab39' 
+WHERE ID = 'df4e3690-1241-4adc-9333-5b714be285d6';

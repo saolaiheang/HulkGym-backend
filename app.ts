@@ -16,6 +16,7 @@ import Promotions from "./src/routes/promotion";
 import { Promotion } from "./src/entity/promotion.entity";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan"
+import { Branch } from "./src/entity/branch.entity";
 
 
 import axios from "axios";
@@ -45,7 +46,6 @@ app.use("/api/auth", auth);
 app.use("/api/activity", activity);
 app.use("/api/branch", branch);
 app.use("/api/promotion", Promotions);
-
 app.use("/api/coupon", coupon);
 app.use("/api/workout", workoutPlan)
 
@@ -57,6 +57,7 @@ const commands = [
   { command: "/start", description: "Start the bot and get command list" },
   { command: "/help", description: "Get help and usage instructions" },
   { command: "/contact", description: "Get contact information" },
+  { command: "/branch", description: "See current branch" },
   { command: "/promotion", description: "See current promotions" },
   { command: "/feedback", description: "Submit feedback" },
   { command: "/image", description: "Send an image" },
@@ -95,6 +96,31 @@ bot.onText(/\/contact/, (msg) => {
 });
 
 
+bot.onText(/\/branch/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Branch);
+  try {
+    const branch = await userRepo.find();
+    if (branch.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branch found.");
+    }
+    const branchs = branch.map(
+      (branch) =>
+        `🔥 branch 🔥\n` +
+        `🏷️ *${branch.name}*\n` +
+        `💬 ${branch.image}\n` +
+        `💬 ${branch.location}\n` 
+        // `🎯 Discount: ${branch.discount_percentage}%\n` +
+        // `⏳ Valid Until: ${branch.valid_until}\n`
+    ).join('\n\n\n');
+    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
+      { caption: `${branchs}` }
+    )
+  } catch (err) {
+    console.error("Error fetching branches", err)
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
+  }
+
+});
 bot.onText(/\/promotion/, async (msg) => {
   const userRepo = AppDataSource.getRepository(Promotion);
   try {
