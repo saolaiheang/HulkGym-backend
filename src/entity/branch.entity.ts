@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Branch_User } from "./branch-user.entity";
-import { PhoneNumber } from "./phone_number.entity";
+import { Branch_Contact } from "./branch_contact.entity";
 
 @Entity()
 export class Branch {
@@ -19,6 +19,6 @@ export class Branch {
   @OneToMany(() => Branch_User, (branch_user) => branch_user.branch)
   branch_users: Branch_User[];
 
-  @OneToMany(() => PhoneNumber, (phone_number) => phone_number.branch) 
-  phone_numbers: PhoneNumber[];
+  @OneToMany(() => Branch_Contact, (phone_number) => phone_number.branch) 
+  phone_numbers: Branch_Contact[];
 }
