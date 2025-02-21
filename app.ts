@@ -45,134 +45,69 @@ app.use("/api/coupon",coupon)
 const bot = new telegramBot(token, { polling: true });
 
 // Define the command list
-const commands = [
+export const commands = [
   { command: "/start", description: "Start the bot and get command list" },
-  { command: "/help", description: "Get help and usage instructions" },
-  { command: "/contact", description: "Get contact information" },
-  { command: "/promotion", description: "See current promotions" },
-  { command: "/feedback", description: "Submit feedback" },
-  { command: "/image", description: "Send an image" },
-  { command: "/text", description: "Send a text message" },
-  { command: "/link", description: "Send a link" },
-  { command: "/list", description: "Send a list" },
-  { command: "/table", description: "Send a table" },
-  { command: "/options", description: "Send options" },
+  { command: "/showtext", description: "Send a text message" },
+  { command: "/showimage", description: "Send a message with an image" },
+  { command: "/showoptions", description: "Send options" },
+  { command: "/askquestions", description: "Send questions" },
 ];
 
-// Set bot commands in Telegram
 bot
   .setMyCommands(commands)
   .then(() => console.log("Commands set successfully"));
-
-// Handle /start command
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  let response = "Welcome! Here are the available commands:\n\n";
-  commands.forEach((cmd) => {
-    response += `${cmd.command} - ${cmd.description}\n`;
+  bot.onText(/\/showtext/, (msg) => {
+    bot.sendMessage(
+      msg.chat.id,
+      "Welcome to WMAD Class"
+    );
   });
-  bot.sendMessage(chatId, response);
-});
-
-// Handle other commands
-bot.onText(/\/help/, (msg) => {
-  bot.sendMessage(
-    msg.chat.id,
-    "This bot allows you to access various features. Use /start to see available commands."
-  );
-});
-
-bot.onText(/\/contact/, (msg) => {
-  bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
-});
-
-bot.onText(/\/promotion/, (msg) => {
-  bot.sendMessage(
-    msg.chat.id,
-    "Check out our latest promotions at https://example.com/promotions"
-  );
-});
-
-bot.onText(/\/feedback/, (msg) => {
-  bot.sendMessage(
-    msg.chat.id,
-    "Please send your feedback here, and we will review it."
-  );
-});
-
-// Handle /image command
-bot.onText(/\/image/, (msg) => {
-  bot.sendPhoto(msg.chat.id, "https://picsum.photos/seed/picsum/200/300", {
-    caption: "Here is an image for you!",
-  });
-});
-
-// Handle /text command
-bot.onText(/\/text/, (msg) => {
-  bot.sendMessage(msg.chat.id, "This is a sample text message.");
-});
-
-// Handle /link command
-bot.onText(/\/link/, (msg) => {
-  bot.sendMessage(msg.chat.id, "Check out this link: https://example.com");
-});
-
-// Handle /list command
-bot.onText(/\/list/, (msg) => {
-  const list = "- Item 1\n- Item 2\n- Item 3\n- Item 4";
-  bot.sendMessage(msg.chat.id, `Here is your list:\n${list}`);
-});
-
-// Handle /table command
-bot.onText(/\/table/, (msg) => {
-  const table = `
-  <pre>
-  | Tables   |      Are      |  Cool |
-  |----------|:-------------:|------:|
-  | col 1 is |  left-aligned | $1600 |
-  | col 2 is |    centered   |   $12 |
-  | col 3 is | right-aligned |    $1 |
-  </pre>
-  `;
-  bot.sendMessage(msg.chat.id, `Here is a table:\n${table}`, {
-    parse_mode: "HTML",
-  });
-});
-
-// Listen for any kind of message. There are different kinds of
-bot.on("message", (msg) => {
-  try {
+  bot.onText(/\/showimage/, (msg) => {
+    const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
+    const description = `
+ *1️⃣ Hulk Gym Open House – Try for Free! 🎉*\n
+ *📅 Date:* March 10, 2025\n
+ *📍 Location:* All Hulk Gym branches\n
+ Ever wanted to experience Hulk Gym before signing up? Now’s your chance! Join us for an *exclusive Open House* where you can try our facilities *for FREE* for one day. Get access to top-notch equipment, professional trainers, and special discounts on memberships.
+ *👉 Don’t miss out! Bring a friend and train together.*
+ `;
+     bot.sendPhoto(
+       msg.chat.id, imageUrl,
+       {
+         caption: description,
+         parse_mode: "Markdown",
+       }
+     );
+   });
+   bot.onText(/\/showoptions/, (msg) => {
     const chatId = msg.chat.id;
-
-    // send a message to the chat acknowledging receipt of their message
-    const message = handleMessage(msg) || "";
-    console.log("------ ", msg);
-    if (message.length > 0) bot.sendMessage(chatId, message);
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// Handle /options command with inline buttons
-bot.onText(/\/options/, (msg) => {
-  const chatId = msg.chat.id;
-  const options = {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "Option 1", callback_data: "option_1" },
-          { text: "Option 2", callback_data: "option_2" },
-        ],
-        [{ text: "Option 3", callback_data: "option_3" }],
+    const fruits = [
+      [
+        {
+          text: "Fruit 1",
+          callback_data: "showoptions=id-1",
+        },
       ],
-    },
-  };
-  bot.sendMessage(chatId, "Please select an option:", options);
-});
-
-// Handle callback queries from inline buttons
+      [
+        {
+          text: "Fruit 2",
+          callback_data: "showoptions=id-2",
+        },
+      ],
+    ];
+    
+    const options = {
+      reply_markup: {
+        inline_keyboard: fruits,
+      },
+    };
+    bot.sendMessage(chatId, "Choose your favourite fruit:", options);
+  });
+  
+//# Handle callback query when user selected on a fruit
 bot.on("callback_query", (callbackQuery) => {
   const msg = callbackQuery.message;
+  console.log(callbackQuery);
   if (msg) {
     bot.sendMessage(msg.chat.id, `You selected: ${callbackQuery.data}`);
     bot.answerCallbackQuery(callbackQuery.id);
