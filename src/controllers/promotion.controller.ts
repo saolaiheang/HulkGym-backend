@@ -4,9 +4,9 @@ import { AppDataSource } from '../config';
 
 export const PostDataPromotion = async (req: Request, res: Response) => {
     const userRepo = AppDataSource.getRepository(Promotion);
-    const { promotion_code, description } = req.body;
+    const { title, img_url, offer_description, discount_percentage, valid_until } = req.body;
 
-    if (!promotion_code || !description) {
+    if (!title || !img_url || !offer_description || !discount_percentage || !valid_until) {
         return res.status(500).json({
             message: "something wrong",
         });
@@ -15,8 +15,11 @@ export const PostDataPromotion = async (req: Request, res: Response) => {
 
 
     const promotion = new Promotion();
-    promotion.promotion_code = promotion_code;
-    promotion.description = description;
+    promotion.title = title
+    promotion.img_url = img_url
+    promotion.offer_description = offer_description
+    promotion.discount_percentage = discount_percentage
+    promotion.valid_until = valid_until
 
     await userRepo.save(promotion);
 
@@ -51,11 +54,11 @@ export const UpdateDataPromotion = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
         const UpdatedData = req.body;
-        const promotion = await userRepo.findOneBy({id})
+        const promotion = await userRepo.findOneBy({ id })
 
         await userRepo.update(id, UpdatedData);
 
-        res.status(200).json({succes: promotion});
+        res.status(200).json({ succes: promotion });
     } catch (err) {
         res.status(500).json({ message: "Internal server." })
     }
@@ -65,11 +68,11 @@ export const deleteDataPromotion = async (req: Request, res: Response) => {
     const userRepo = AppDataSource.getRepository(Promotion);
     try {
         const id = req.params.id;
-        const promotion = await userRepo.findOneBy({id})
+        const promotion = await userRepo.findOneBy({ id })
 
         await userRepo.delete(id);
 
-        res.status(200).json({succes: "Delete succes....."});
+        res.status(200).json({ succes: "Delete succes....." });
     } catch (err) {
         res.status(500).json({ message: "Internal server." })
     }

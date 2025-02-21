@@ -5,23 +5,32 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    OneToMany,
+    BaseEntity
 } from "typeorm";
+
 @Entity({ name: "promotion" })
 export class Promotion {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
     @Column({ type: 'varchar', length: 255 })
-    promotion_code: string;
+    title: string;
+
+    @Column({ type: 'varchar' })
+    img_url: string;
 
     @Column({ type: 'text' })
-    description: string;
+    offer_description: string;
 
+    @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+    discount_percentage: number;
+
+    @Column({ type: 'date' })
+    valid_until: Date;
 
     @CreateDateColumn()
-    start_date: Date;
+    created_at: Date;
 
     @UpdateDateColumn()
-    end_date: Date;
+    updated_at: Date;
 }

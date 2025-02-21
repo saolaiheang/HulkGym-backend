@@ -11,8 +11,11 @@ import bodyParser from "body-parser";
 import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
-import Promotion from "./src/routes/promotion";
-import coupon from "./src/routes/coupon"
+import Promotions from "./src/routes/promotion";
+import { Promotion } from "./src/entity/promotion.entity";
+import coupon from "./src/routes/coupon";
+import workoutPlan from "./src/routes/workout_plan"
+
 
 import axios from "axios";
 
@@ -37,9 +40,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
-app.use("/api/promotion", Promotion);
-app.use("/api/coupon",coupon)
+app.use("/api/promotion", Promotions);
 
+app.use("/api/coupon", coupon);
+app.use("/api/workout", workoutPlan)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -56,30 +60,106 @@ export const commands = [
 bot
   .setMyCommands(commands)
   .then(() => console.log("Commands set successfully"));
-  bot.onText(/\/showtext/, (msg) => {
-    bot.sendMessage(
-      msg.chat.id,
-      "Welcome to WMAD Class"
-    );
+
+// Handle /start command
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  let response = "Welcome! Here are the available commands:\n\n";
+  commands.forEach((cmd) => {
+    response += `${cmd.command} - ${cmd.description}\n`;
   });
-  bot.onText(/\/showimage/, (msg) => {
-    const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
-    const description = `
- *1️⃣ Hulk Gym Open House – Try for Free! 🎉*\n
- *📅 Date:* March 10, 2025\n
- *📍 Location:* All Hulk Gym branches\n
- Ever wanted to experience Hulk Gym before signing up? Now’s your chance! Join us for an *exclusive Open House* where you can try our facilities *for FREE* for one day. Get access to top-notch equipment, professional trainers, and special discounts on memberships.
- *👉 Don’t miss out! Bring a friend and train together.*
- `;
-     bot.sendPhoto(
-       msg.chat.id, imageUrl,
-       {
-         caption: description,
-         parse_mode: "Markdown",
-       }
-     );
-   });
-   bot.onText(/\/showoptions/, (msg) => {
+  bot.sendMessage(chatId, response);
+});
+
+// Handle other commands
+bot.onText(/\/help/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    "This bot allows you to access various features. Use /start to see available commands."
+  );
+});
+
+bot.onText(/\/contact/, (msg) => {
+  bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
+});
+
+
+bot.onText(/\/promotion/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Promotion);
+  try {
+    const promotion = await userRepo.find({
+      order: { created_at: "DESC" }
+    })
+    if (promotion.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branch found.");
+    }
+    const promotions = promotion.map(
+      (promotion, index) =>
+        `🔥 Promotion ${index + 1} 🔥\n` +
+        `🏷️ *${promotion.title}*\n` +
+        `💬 ${promotion.offer_description}\n` +
+        `🎯 Discount: ${promotion.discount_percentage}%\n` +
+        `⏳ Valid Until: ${promotion.valid_until}\n`
+    ).join('\n\n\n');
+    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
+      { caption: `${promotions}` }
+    )
+  } catch (err) {
+    console.error("Error fetching branches", err)
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
+  }
+
+});
+
+bot.onText(/\/feedback/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    "Please send your feedback here, and we will review it."
+  );
+});
+
+// Handle /image command
+bot.onText(/\/image/, (msg) => {
+  bot.sendPhoto(msg.chat.id, "https://picsum.photos/seed/picsum/200/300", {
+    caption: "Here is an image for you\nNew Line abc\nkkjkj!",
+  });
+});
+
+// Handle /text command
+bot.onText(/\/text/, (msg) => {
+  bot.sendMessage(msg.chat.id, "This is a sample text message.");
+});
+
+// Handle /link command
+bot.onText(/\/link/, (msg) => {
+  bot.sendMessage(msg.chat.id, "Check out this link: https://example.com");
+});
+
+// Handle /list command
+bot.onText(/\/list/, (msg) => {
+  const list = "- Item 1\n- Item 2\n- Item 3\n- Item 4";
+  bot.sendMessage(msg.chat.id, `Here is your list:\n${list}`);
+});
+
+// Handle /table command
+bot.onText(/\/table/, (msg) => {
+  const table = `
+  <pre>
+  | Tables   |      Are      |  Cool |
+  |----------|:-------------:|------:|
+  | col 1 is |  left-aligned | $1600 |
+  | col 2 is |    centered   |   $12 |
+  | col 3 is | right-aligned |    $1 |
+  </pre>
+  `;
+  bot.sendMessage(msg.chat.id, `Here is a table:\n${table}`, {
+    parse_mode: "HTML",
+  });
+});
+
+// Listen for any kind of message. There are different kinds of
+bot.on("message", (msg) => {
+  try {
     const chatId = msg.chat.id;
     const fruits = [
       [
