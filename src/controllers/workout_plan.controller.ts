@@ -4,6 +4,7 @@ import { AppDataSource } from "../config";
 import { WorkoutPlan } from "../entity/workout_plan.entity";
 
 export const GetDatWorkoutPlan = async (req: Request, res: Response) => {
+
     const workoutPlanRepo = AppDataSource.getRepository(WorkoutPlan);
     try {
         const workout = await workoutPlanRepo.find();
@@ -93,4 +94,5 @@ export const UpdateWorkoutPlan = async (req: Request, res: Response,) => {
     } catch (error) {
         res.status(500).json({ message: "Internal server" });
     }
+
 }

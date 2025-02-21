@@ -42,6 +42,7 @@ INSERT INTO public.workout_plan(
 	 ('Standing Calf Raises','5 sets',3,' 15 reps (~30-50 calories)'),
 	 ('Seated Calf Raises','5 sets',3,'15 reps (~30-50 calories)'),
 	 ('Hanging Leg Raise','4 sets',3,'15 reps (~30-50 calories)')
+
 INSERT INTO public.workout(
 	 name, "workoutPlanId")
 	VALUES('Chest & Back (Push-Pull Power) 🔥',2 ),
@@ -65,10 +66,12 @@ VALUES
 
 	INSERT INTO public.workout (name, "workoutPlanId") 
 VALUES 
+
 ('Strength & Power 💪', 5),
 ('Core & Stability 🏋️‍♂️', 5),
 ('Endurance & Cardio 🏃‍♂️🔥', 5),
 ('Cool Down & Mobility 🧘', 5)
+
 
 
 INSERT INTO public.exercise(
