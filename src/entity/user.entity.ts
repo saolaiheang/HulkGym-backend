@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from "typeorm";
 import { RoleEnum } from "../common/types/enum";
 import { Activity } from "./activity.entity";

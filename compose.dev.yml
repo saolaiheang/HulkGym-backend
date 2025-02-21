@@ -26,6 +26,7 @@ services:
     volumes:
       - postgres-data1:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -47,3 +48,4 @@ services:
 volumes:
   postgres-data1:
   pgadmin-data1:
+
