@@ -12,12 +12,6 @@ import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import branch from "./src/routes/branch"
 import { handleMessage } from "./src/service/telegram.service";
-import Promotions from "./src/routes/promotion";
-import { Promotion } from "./src/entity/promotion.entity";
-import coupon from "./src/routes/coupon";
-import workoutPlan from "./src/routes/workout_plan"
-
-
 import axios from "axios";
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -44,10 +38,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
 app.use("/api/branch", branch);
-app.use("/api/promotion", Promotions);
-
-app.use("/api/coupon", coupon);
-app.use("/api/workout", workoutPlan)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -94,32 +84,11 @@ bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
 });
 
-
-bot.onText(/\/promotion/, async (msg) => {
-  const userRepo = AppDataSource.getRepository(Promotion);
-  try {
-    const promotion = await userRepo.find({
-      order: { created_at: "DESC" }
-    })
-    if (promotion.length === 0) {
-      return bot.sendMessage(msg.chat.id, "No branch found.");
-    }
-    const promotions = promotion.map(
-      (promotion, index) =>
-        `🔥 Promotion ${index + 1} 🔥\n` +
-        `🏷️ *${promotion.title}*\n` +
-        `💬 ${promotion.offer_description}\n` +
-        `🎯 Discount: ${promotion.discount_percentage}%\n` +
-        `⏳ Valid Until: ${promotion.valid_until}\n`
-    ).join('\n\n\n');
-    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
-      { caption: `${promotions}` }
-    )
-  } catch (err) {
-    console.error("Error fetching branches", err)
-    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
-  }
-
+bot.onText(/\/promotion/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    "Check out our latest promotions at https://example.com/promotions"
+  );
 });
 
 bot.onText(/\/feedback/, (msg) => {
@@ -132,7 +101,7 @@ bot.onText(/\/feedback/, (msg) => {
 // Handle /image command
 bot.onText(/\/image/, (msg) => {
   bot.sendPhoto(msg.chat.id, "https://picsum.photos/seed/picsum/200/300", {
-    caption: "Here is an image for you\nNew Line abc\nkkjkj!",
+    caption: "Here is an image for you!",
   });
 });
 

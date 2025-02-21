@@ -2,11 +2,7 @@ services:
   backend:
     build: .
     ports:
-
-
-      - "3308:3000"
-
-
+      - "3001:3000"
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -29,6 +25,7 @@ services:
       - "5439:5432"
     volumes:
       - postgres-data1:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     environment:
       - POSTGRES_USER=${DB_USERNAME}
@@ -46,7 +43,6 @@ services:
     depends_on:
       - database
     volumes:
-
       - pgadmin-data1:/var/lib/pgadmin
 
 volumes:
