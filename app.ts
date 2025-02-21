@@ -182,7 +182,9 @@ bot.on("message", (msg) => {
       },
     };
     bot.sendMessage(chatId, "Choose your favourite fruit:", options);
-  });
+  }catch(err){
+
+  }});
   
 //# Handle callback query when user selected on a fruit
 bot.on("callback_query", (callbackQuery) => {
