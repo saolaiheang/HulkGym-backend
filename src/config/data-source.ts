@@ -2,7 +2,6 @@ import { encryptPassword } from "./../utils/encrypt";
 import { DataSource } from "typeorm";
 import { UserInfo } from "../entity/user.entity";
 import path from "path";
-
 import * as dotenv from "dotenv";
 
 const entitiesPath = path.join(__dirname, "../entity/**/*.{ts,js}");
