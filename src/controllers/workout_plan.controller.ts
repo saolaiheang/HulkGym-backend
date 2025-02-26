@@ -17,6 +17,7 @@ export const GetDatWorkoutPlan = async (req: Request, res: Response) => {
 }
 
 
+
 export const CreateNewPlan = async (req: Request, res: Response) => {
     const workoutPlanRepo = AppDataSource.getRepository(WorkoutPlan);
     try {

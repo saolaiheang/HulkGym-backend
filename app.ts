@@ -11,10 +11,10 @@ import bodyParser from "body-parser";
 import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
-import Promotions from "./src/routes/promotion";
-import { Promotion } from "./src/entity/promotion.entity";
+import Promotion from "./src/routes/promotion";
 import coupon from "./src/routes/coupon";
-import workoutPlan from "./src/routes/workout_plan"
+import workoutPlan from "./src/routes/workout_plan";
+import workout from "./src/routes/workout"
 
 
 import axios from "axios";
@@ -40,23 +40,31 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
-app.use("/api/promotion", Promotions);
+app.use("/api/promotion", Promotion);
 
 app.use("/api/coupon", coupon);
-app.use("/api/workout", workoutPlan)
+app.use("/api/workout_plan", workoutPlan)
+app.use("/api/workout", workout)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
 
 // Define the command list
-export const commands = [
+const commands = [
   { command: "/start", description: "Start the bot and get command list" },
-  { command: "/showtext", description: "Send a text message" },
-  { command: "/showimage", description: "Send a message with an image" },
-  { command: "/showoptions", description: "Send options" },
-  { command: "/askquestions", description: "Send questions" },
+  { command: "/help", description: "Get help and usage instructions" },
+  { command: "/contact", description: "Get contact information" },
+  { command: "/promotion", description: "See current promotions" },
+  { command: "/feedback", description: "Submit feedback" },
+  { command: "/image", description: "Send an image" },
+  { command: "/text", description: "Send a text message" },
+  { command: "/link", description: "Send a link" },
+  { command: "/list", description: "Send a list" },
+  { command: "/table", description: "Send a table" },
+  { command: "/options", description: "Send options" },
 ];
 
+// Set bot commands in Telegram
 bot
   .setMyCommands(commands)
   .then(() => console.log("Commands set successfully"));
@@ -83,32 +91,13 @@ bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
 });
 
+bot.onText(/\/promotion/, (msg) => {
 
-bot.onText(/\/promotion/, async (msg) => {
-  const userRepo = AppDataSource.getRepository(Promotion);
-  try {
-    const promotion = await userRepo.find({
-      order: { created_at: "DESC" }
-    })
-    if (promotion.length === 0) {
-      return bot.sendMessage(msg.chat.id, "No branch found.");
-    }
-    const promotions = promotion.map(
-      (promotion, index) =>
-        `🔥 Promotion ${index + 1} 🔥\n` +
-        `🏷️ *${promotion.title}*\n` +
-        `💬 ${promotion.offer_description}\n` +
-        `🎯 Discount: ${promotion.discount_percentage}%\n` +
-        `⏳ Valid Until: ${promotion.valid_until}\n`
-    ).join('\n\n\n');
-    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
-      { caption: `${promotions}` }
-    )
-  } catch (err) {
-    console.error("Error fetching branches", err)
-    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
-  }
 
+  bot.sendMessage(
+    msg.chat.id,
+    "ABC"
+  );
 });
 
 bot.onText(/\/feedback/, (msg) => {
@@ -161,35 +150,36 @@ bot.onText(/\/table/, (msg) => {
 bot.on("message", (msg) => {
   try {
     const chatId = msg.chat.id;
-    const fruits = [
-      [
-        {
-          text: "Fruit 1",
-          callback_data: "showoptions=id-1",
-        },
-      ],
-      [
-        {
-          text: "Fruit 2",
-          callback_data: "showoptions=id-2",
-        },
-      ],
-    ];
-    
-    const options = {
-      reply_markup: {
-        inline_keyboard: fruits,
-      },
-    };
-    bot.sendMessage(chatId, "Choose your favourite fruit:", options);
-  }catch(err){
 
-  }});
-  
-//# Handle callback query when user selected on a fruit
+    // send a message to the chat acknowledging receipt of their message
+    const message = handleMessage(msg) || "";
+    console.log("------ ", msg);
+    if (message.length > 0) bot.sendMessage(chatId, message);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Handle /options command with inline buttons
+bot.onText(/\/options/, (msg) => {
+  const chatId = msg.chat.id;
+  const options = {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: "Option 1", callback_data: "option_1" },
+          { text: "Option 2", callback_data: "option_2" },
+        ],
+        [{ text: "Option 3", callback_data: "option_3" }],
+      ],
+    },
+  };
+  bot.sendMessage(chatId, "Please select an option:", options);
+});
+
+// Handle callback queries from inline buttons
 bot.on("callback_query", (callbackQuery) => {
   const msg = callbackQuery.message;
-  console.log(callbackQuery);
   if (msg) {
     bot.sendMessage(msg.chat.id, `You selected: ${callbackQuery.data}`);
     bot.answerCallbackQuery(callbackQuery.id);
