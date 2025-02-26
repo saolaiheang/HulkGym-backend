@@ -233,8 +233,9 @@ bot.on("callback_query", async (callbackQuery) => {
         `🔥 Exercise ${index + 1} 🔥\n` +
         `🏷️ *${exercise.id}*\n` +
         `💬 ${exercise.name}\n` +
-        `🎯 Discount: ${exercise.sets}%\n` +
-        `⏳ Valid Until: ${exercise.calories_burned}\n`
+        `🎯 set: ${exercise.sets}\n` +
+        `⏳ calories_burned: ${exercise.calories_burned}\n`+
+        `💪 weight: ${exercise.lbs}\n`
     ).join('\n\n\n');
   
      
