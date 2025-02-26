@@ -16,10 +16,8 @@ import Promotions from "./src/routes/promotion";
 import { Promotion } from "./src/entity/promotion.entity";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan"
-import { Branch } from "./src/entity/branch.entity";
 
 
-import axios from "axios";
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN || "";
@@ -66,6 +64,8 @@ const commands = [
   { command: "/list", description: "Send a list" },
   { command: "/table", description: "Send a table" },
   { command: "/options", description: "Send options" },
+  { command: "/workout_plan", description: "Send list" },
+
 ];
 
 // Set bot commands in Telegram
@@ -147,6 +147,134 @@ bot.onText(/\/promotion/, async (msg) => {
   }
 
 });
+
+
+
+bot.onText(/\/workout_plan/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(WorkoutPlan);
+  try {
+    const workout_plans = await userRepo.find({
+      relations: {
+        workouts: {
+          exercises: true, // Load related exercises
+        },
+      },
+      order: { id: "DESC" },
+    });
+
+    if (workout_plans.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No workout plans found.");
+    }
+
+    // Create inline buttons for each workout plan
+    const display = workout_plans.map((workout_plan) => [
+      {
+        text: `🔥 ${workout_plan.name}`,
+        callback_data: `workoutPlan_${workout_plan.id}`, // Ensure it matches in the callback query
+      },
+    ]);
+
+    bot.sendMessage(msg.chat.id, "Choose a Workout Plan:", {
+      reply_markup: {
+        inline_keyboard: display,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching workout plans", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch workout plans. Please try again later.");
+  }
+});
+
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const data = callbackQuery.data;
+
+  if (!msg || !data) {
+    return bot.sendMessage(callbackQuery.from.id, "Invalid selection. Please try again.");
+  }
+
+  if (data.startsWith("workoutPlan_")) {
+    const workoutPlanId = data.split("_")[1]; // Extract ID
+
+    const workoutRepo = AppDataSource.getRepository(Workout);
+
+    try {
+      const workouts = await workoutRepo.find({
+        where: { workoutPlan: { id: Number(workoutPlanId) } }, // Ensure proper relation query
+        order: { id: "ASC" },
+      });
+
+      if (workouts.length === 0) {
+        return bot.sendMessage(msg.chat.id, "No workouts found for this plan.");
+      }
+
+      // Create inline buttons for each workout
+      const buttons = workouts.map((workout) => [
+        {
+          text: `💪 ${workout.name}`,
+          callback_data: `workout_${workout.id}`, // Ensure consistency
+        },
+      ]);
+
+      bot.sendMessage(msg.chat.id, `Workouts in this plan:`, {
+        reply_markup: {
+          inline_keyboard: buttons,
+        },
+      });
+    } catch (err) {
+      console.error("Error fetching workouts:", err);
+      bot.sendMessage(msg.chat.id, "Failed to fetch workouts. Please try again later.");
+    }
+  }
+});
+
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const data = callbackQuery.data;
+
+  if (!msg || !data) {
+    return bot.sendMessage(callbackQuery.from.id, "Invalid selection. Please try again.");
+  }
+
+  if (data.startsWith("workout_")) {
+    const workoutId= data.split("_")[1]; // Extract ID
+
+    const workoutRepo = AppDataSource.getRepository(Exercise);
+
+    try {
+      const exercises = await workoutRepo.find({
+        where: { workouts: { id: Number(workoutId) } }, // Ensure proper relation query
+        order: { id: "ASC" },
+      });
+
+      if (exercises.length === 0) {
+        return bot.sendMessage(msg.chat.id, "No exercises found for this plan.");
+      }
+
+      const buttons = exercises.map((exercise,index)=>
+        `🔥 Exercise ${index + 1} 🔥\n` +
+        `🏷️ *${exercise.id}*\n` +
+        `💬 ${exercise.name}\n` +
+        `🎯 set: ${exercise.sets}\n` +
+        `⏳ calories_burned: ${exercise.calories_burned}\n`+
+        `💪 weight: ${exercise.lbs}\n`
+    ).join('\n\n\n');
+  
+     
+
+      bot.sendMessage(msg.chat.id, `exercises in this plan:${buttons}`);
+    } catch (err) {
+      console.error("Error fetching workouts:", err);
+      bot.sendMessage(msg.chat.id, "Failed to fetch workouts. Please try again later.");
+    }
+  }
+});
+
+
+
+
+
+
 
 bot.onText(/\/feedback/, (msg) => {
   bot.sendMessage(
