@@ -12,10 +12,10 @@ import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import branch from "./src/routes/branch"
 import { handleMessage } from "./src/service/telegram.service";
-import Promotions from "./src/routes/promotion";
-import { Promotion } from "./src/entity/promotion.entity";
+import Promotion from "./src/routes/promotion";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan";
+import workout from "./src/routes/workout"
 import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
@@ -45,11 +45,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
+app.use("/api/promotion", Promotion);
 app.use("/api/branch", branch);
 app.use("/api/promotion", Promotions);
 
 app.use("/api/coupon", coupon);
-app.use("/api/workout", workoutPlan)
+app.use("/api/workout_plan", workoutPlan)
+app.use("/api/workout", workout)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -98,32 +100,13 @@ bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
 });
 
+bot.onText(/\/promotion/, (msg) => {
 
-bot.onText(/\/promotion/, async (msg) => {
-  const userRepo = AppDataSource.getRepository(Promotion);
-  try {
-    const promotion = await userRepo.find({
-      order: { created_at: "DESC" }
-    })
-    if (promotion.length === 0) {
-      return bot.sendMessage(msg.chat.id, "No branch found.");
-    }
-    const promotions = promotion.map(
-      (promotion, index) =>
-        `🔥 Promotion ${index + 1} 🔥\n` +
-        `🏷️ *${promotion.title}*\n` +
-        `💬 ${promotion.offer_description}\n` +
-        `🎯 Discount: ${promotion.discount_percentage}%\n` +
-        `⏳ Valid Until: ${promotion.valid_until}\n`
-    ).join('\n\n\n');
-    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
-      { caption: `${promotions}` }
-    )
-  } catch (err) {
-    console.error("Error fetching branches", err)
-    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
-  }
 
+  bot.sendMessage(
+    msg.chat.id,
+    "ABC"
+  );
 });
 
 
