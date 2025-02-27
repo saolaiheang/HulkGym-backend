@@ -19,6 +19,7 @@ import workoutPlan from "./src/routes/workout_plan";
 import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
+import { Coupon } from "./src/entity/coupon.entity";
 
 
 
@@ -63,7 +64,7 @@ const commands = [
   { command: "/feedback", description: "Submit feedback" },
   { command: "/image", description: "Send an image" },
   { command: "/text", description: "Send a text message" },
-  { command: "/link", description: "Send a link" },
+  { command: "/coupon", description: "Send a coupon" },
   { command: "/list", description: "Send a list" },
   { command: "/table", description: "Send a table" },
   { command: "/options", description: "Send options" },
@@ -102,28 +103,28 @@ bot.onText(/\/contact/, (msg) => {
 bot.onText(/\/promotion/, async (msg) => {
   const userRepo = AppDataSource.getRepository(Promotion);
   try {
-    const promotion = await userRepo.find({
+    const promotions = await userRepo.find({
       order: { created_at: "DESC" }
     })
-    if (promotion.length === 0) {
+    if (promotions.length === 0) {
       return bot.sendMessage(msg.chat.id, "No branch found.");
     }
-    const promotions = promotion.map(
-      (promotion, index) =>
-        `🔥 Promotion ${index + 1} 🔥\n` +
-        `🏷️ *${promotion.title}*\n` +
+    for (const promotion of promotions) {
+      const message = `🔥 *${promotion.title}* 🔥\n` +
         `💬 ${promotion.offer_description}\n` +
         `🎯 Discount: ${promotion.discount_percentage}%\n` +
-        `⏳ Valid Until: ${promotion.valid_until}\n`
-    ).join('\n\n\n');
-    bot.sendPhoto(msg.chat.id, `https://picsum.photos/seed/picsum/200/300`,
-      { caption: `${promotions}` }
-    )
+        `⏳ Valid Until: ${promotion.valid_until}\n`;
+
+      if (promotion.img_url) {
+        await bot.sendPhoto(msg.chat.id, promotion.img_url, { caption: message, parse_mode: "Markdown" });
+      } else {
+        await bot.sendMessage(msg.chat.id, message, { parse_mode: "Markdown" });
+      }
+    }
   } catch (err) {
     console.error("Error fetching branches", err)
     bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
   }
-
 });
 
 
@@ -215,7 +216,7 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 
   if (data.startsWith("workout_")) {
-    const workoutId= data.split("_")[1]; // Extract ID
+    const workoutId = data.split("_")[1]; // Extract ID
 
     const workoutRepo = AppDataSource.getRepository(Exercise);
 
@@ -229,16 +230,16 @@ bot.on("callback_query", async (callbackQuery) => {
         return bot.sendMessage(msg.chat.id, "No exercises found for this plan.");
       }
 
-      const buttons = exercises.map((exercise,index)=>
+      const buttons = exercises.map((exercise, index) =>
         `🔥 Exercise ${index + 1} 🔥\n` +
         `🏷️ *${exercise.id}*\n` +
         `💬 ${exercise.name}\n` +
         `🎯 set: ${exercise.sets}\n` +
-        `⏳ calories_burned: ${exercise.calories_burned}\n`+
+        `⏳ calories_burned: ${exercise.calories_burned}\n` +
         `💪 weight: ${exercise.lbs}\n`
-    ).join('\n\n\n');
-  
-     
+      ).join('\n\n\n');
+
+
 
       bot.sendMessage(msg.chat.id, `exercises in this plan:${buttons}`);
     } catch (err) {
@@ -274,8 +275,26 @@ bot.onText(/\/text/, (msg) => {
 });
 
 // Handle /link command
-bot.onText(/\/link/, (msg) => {
-  bot.sendMessage(msg.chat.id, "Check out this link: https://example.com");
+bot.onText(/\/coupon/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Coupon);
+  try {
+    const coupons = await userRepo.find({
+    })
+    if (coupons.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branch found.");
+    }
+    for (const coupon of coupons) {
+      const message = `🎫 *${coupon.title}* 🎫\n` +
+        `Offer: ${coupon.offer}\n` +
+        ` Valid Until: ${coupon.valid_until}%\n` +
+        ` Terms: ${coupon.terms}\n` +
+        `🔥 Claim your free trial now & kickstart your fitness journey! 💪`;
+      bot.sendMessage(msg.chat.id, message);
+    }
+  } catch (err) {
+    console.error("Error fetching workouts:", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch workouts. Please try again later.");
+  }
 });
 
 // Handle /list command

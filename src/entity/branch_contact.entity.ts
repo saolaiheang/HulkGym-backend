@@ -9,6 +9,6 @@ export class Branch_Contact {
   @ManyToOne(() => Branch, (branch) => branch.phone_numbers) 
   branch: Branch;
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "varchar", length: 255, nullable: true })
   phone_number: string;
 }
