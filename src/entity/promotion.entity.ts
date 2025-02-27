@@ -5,7 +5,7 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    BaseEntity
+
 } from "typeorm";
 
 @Entity({ name: "promotion" })
@@ -13,19 +13,19 @@ export class Promotion {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ type: 'varchar', length: 255 })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     title: string;
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'varchar', nullable: true })
     img_url: string;
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     offer_description: string;
 
     @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
     discount_percentage: number;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     valid_until: Date;
 
     @CreateDateColumn()
