@@ -16,7 +16,7 @@ export class Coupon {
     @Column()
     offer: string;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: 'timestamp', nullable:true })
     valid_until: Date;
 
     @Column()

@@ -19,11 +19,11 @@ import workout from "./src/routes/workout"
 import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
+import { Coupon } from "./src/entity/coupon.entity";
 import {NewsAnnouncements} from "./src/entity/new.entity"
 import { Branch} from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
-
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -78,6 +78,17 @@ const commands = [
   { command: "/workoutplan", description: "Send list" },
   { command: "/branch", description: "Send list of branch" },
   { command: "/coupon", description: "Send list of coupon" },
+=======
+  { command: "/text", description: "Send a text message" },
+  { command: "/coupon", description: "Send a coupon" },
+  { command: "/list", description: "Send a list" },
+  { command: "/table", description: "Send a table" },
+  { command: "/options", description: "Send options" },
+  { command: "/workout_plan", description: "Send list" },
+  { command: "✅ /promotion", description: "See current promotions" },
+  { command: "🏋️/workout_plan", description: "Send list" },
+  { command: "📋/branch", description: "Send list of branch" },
+  { command: "🎟/coupon", description: "Send list of coupon" },
   { command: "/activity", description: "Send list of activity" },
   { command: "/membership", description: "Send list of membership" },
 
@@ -112,18 +123,38 @@ bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
 });
 
-bot.onText(/\/promotion/, (msg) => {
+bot.onText(/\/promotion/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Promotion);
+  try {
+    const promotions = await userRepo.find({
+      order: { created_at: "DESC" }
+    })
+    if (promotions.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branch found.");
+    }
+    for (const promotion of promotions) {
+      const message = `🔥 *${promotion.title}* 🔥\n` +
+        `💬 ${promotion.offer_description}\n` +
+        `🎯 Discount: ${promotion.discount_percentage}%\n` +
+        `⏳ Valid Until: ${promotion.valid_until}\n`;
 
-
-  bot.sendMessage(
-    msg.chat.id,
-    "ABC"
-  );
+      if (promotion.img_url) {
+        await bot.sendPhoto(msg.chat.id, promotion.img_url, { caption: message, parse_mode: "Markdown" });
+      } else {
+        await bot.sendMessage(msg.chat.id, message, { parse_mode: "Markdown" });
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching branches", err)
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
+  }
 });
+
 
 bot.onText(/\/news/, async (msg) => {
   const userRepo = AppDataSource.getRepository(NewsAnnouncements);
   try {
+
     const newsList = await userRepo.find({
       order: { created_at: "DESC" }
     });
@@ -364,7 +395,7 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 
   if (data.startsWith("workout_")) {
-    const workoutId= data.split("_")[1]; // Extract ID
+    const workoutId = data.split("_")[1]; // Extract ID
 
     const workoutRepo = AppDataSource.getRepository(Exercise);
 
@@ -378,16 +409,16 @@ bot.on("callback_query", async (callbackQuery) => {
         return bot.sendMessage(msg.chat.id, "No exercises found for this plan.");
       }
 
-      const buttons = exercises.map((exercise,index)=>
+      const buttons = exercises.map((exercise, index) =>
         `🔥 Exercise ${index + 1} 🔥\n` +
         `🏷️ *${exercise.id}*\n` +
         `💬 ${exercise.name}\n` +
         `🎯 set: ${exercise.sets}\n` +
-        `⏳ calories_burned: ${exercise.calories_burned}\n`+
+        `⏳ calories_burned: ${exercise.calories_burned}\n` +
         `💪 weight: ${exercise.lbs}\n`
-    ).join('\n\n\n');
-  
-     
+      ).join('\n\n\n');
+
+
 
       bot.sendMessage(msg.chat.id, `exercises in this plan:${buttons}`);
     } catch (err) {
@@ -423,8 +454,26 @@ bot.onText(/\/text/, (msg) => {
 });
 
 // Handle /link command
-bot.onText(/\/link/, (msg) => {
-  bot.sendMessage(msg.chat.id, "Check out this link: https://example.com");
+bot.onText(/\/coupon/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Coupon);
+  try {
+    const coupons = await userRepo.find({
+    })
+    if (coupons.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branch found.");
+    }
+    for (const coupon of coupons) {
+      const message = `🎫 *${coupon.title}* 🎫\n` +
+        `Offer: ${coupon.offer}\n` +
+        ` Valid Until: ${coupon.valid_until}%\n` +
+        ` Terms: ${coupon.terms}\n` +
+        `🔥 Claim your free trial now & kickstart your fitness journey! 💪`;
+      bot.sendMessage(msg.chat.id, message);
+    }
+  } catch (err) {
+    console.error("Error fetching workouts:", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch workouts. Please try again later.");
+  }
 });
 
 // Handle /list command
