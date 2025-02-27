@@ -19,6 +19,7 @@ import workout from "./src/routes/workout"
 import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
+import {NewsAnnouncements} from "./src/entity/new.entity"
 
 
 
@@ -47,7 +48,7 @@ app.use("/api/auth", auth);
 app.use("/api/activity", activity);
 app.use("/api/promotion", Promotion);
 app.use("/api/branch", branch);
-app.use("/api/promotion", Promotions);
+app.use("/api/promotion",Promotion);
 
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
@@ -63,7 +64,7 @@ const commands = [
   { command: "/contact", description: "Get contact information" },
   { command: "/promotion", description: "See current promotions" },
   { command: "/feedback", description: "Submit feedback" },
-  { command: "/image", description: "Send an image" },
+  { command: "/news", description: "Send an news" },
   { command: "/text", description: "Send a text message" },
   { command: "/link", description: "Send a link" },
   { command: "/list", description: "Send a list" },
@@ -108,6 +109,44 @@ bot.onText(/\/promotion/, (msg) => {
     "ABC"
   );
 });
+
+bot.onText(/\/news/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(NewsAnnouncements);
+  try {
+    const newsList = await userRepo.find({
+      order: { created_at: "DESC" }
+    });
+
+    if (newsList.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No news found.");
+    }
+
+    const newsText = newsList
+      .map((item, index) =>
+        `🔥 *News ${index + 1}* 🔥\n` +
+        `🏷️ *${item.title}*\n` +
+        `💬 ${item.content}\n` +
+        `📍 *${item.location}*\n` +
+        `📝 *${item.description}*\n` +
+        `📢 *${item.message}*\n` +
+        `📌 *Status:* ${item.status}\n` +
+        `📅 *Published on:* ${item.published_date}`
+      )
+      .join('\n\n');
+
+    const previewText = newsText.length > 900 ? newsText.substring(0, 900) + '...\n\n🔗 More news available.' : newsText;
+
+    bot.sendPhoto(
+      msg.chat.id,
+      "https://picsum.photos/seed/picsum/200/300",
+      { caption: previewText, parse_mode: "Markdown" }
+    );
+  } catch (err) {
+    console.error("Error fetching news", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch news. Please try again later.");
+  }
+});
+
 
 
 
