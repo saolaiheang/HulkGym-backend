@@ -20,6 +20,8 @@ import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
 import {NewsAnnouncements} from "./src/entity/new.entity"
+import { Branch} from "./src/entity/branch.entity";
+import { Branch_Contact } from "./src/entity/branch_contact.entity";
 
 
 
@@ -71,6 +73,12 @@ const commands = [
   { command: "/table", description: "Send a table" },
   { command: "/options", description: "Send options" },
   { command: "/workout_plan", description: "Send list" },
+  { command: "✅ /promotion", description: "See current promotions" },
+  { command: "🏋️/workout_plan", description: "Send list" },
+  { command: "📋/branch", description: "Send list of branch" },
+  { command: "🎟/coupon", description: "Send list of coupon" },
+  { command: "/activity", description: "Send list of activity" },
+
 
 ];
 
@@ -149,6 +157,94 @@ bot.onText(/\/news/, async (msg) => {
 
 
 
+
+
+  
+  
+  
+
+
+bot.onText(/\/branch/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Branch);
+
+  try {
+    const branches = await userRepo.find({
+      relations: {
+        phone_numbers: true,
+      },
+      order: { id: "DESC" },
+    });
+
+    if (branches.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branches found.");
+    }
+
+    // Create inline buttons for each branch
+    const display = branches.map((branch) => [
+      {
+        text: `🔥 ${branch.name}`,
+        callback_data:`branch_${branch.id}`, // Corrected template literals
+      },
+    ]);
+
+    bot.sendMessage(msg.chat.id, "Choose a Branch:", {
+      reply_markup: {
+        inline_keyboard: display,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching branches:", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+  }
+});
+
+
+
+  
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const data = callbackQuery.data;
+
+  if (!msg || !data) {
+    return bot.sendMessage(callbackQuery.from.id, "Invalid selection. Please try again.");
+  }
+
+  if (data.startsWith("branch_")) {
+    const branchId = data.split("_")[1]; // Extract ID
+
+    const contactRepo = AppDataSource.getRepository(Branch_Contact);
+
+    try {
+      const branch_contacts = await contactRepo.find({
+        where: { branch: { id: branchId } },
+        relations: ["branch"],
+        order: { id: "ASC" },
+      });
+
+      if (branch_contacts.length === 0) {
+        return bot.sendMessage(msg.chat.id, "No contacts found for this branch.");
+      }
+
+      const buttons = branch_contacts
+        .map(
+          (contacts, index) =>
+            // `🔥 ${index + 1} 🔥\n` +
+          ` 🎯${contacts.branch.id}` + `${contacts.branch.name}\n`+
+            `📞 Phone: ${contacts.phone_number}\n`+
+            ` Location: ${contacts.branch.location}\n`
+        )
+        .join("\n");
+
+      bot.sendMessage(msg.chat.id, `Contacts in this branch:\n\n${buttons}`);
+    } catch (err) {
+      console.error("Error fetching contacts:", err);
+      bot.sendMessage(
+        msg.chat.id,
+        "Failed to fetch branch contacts. Please try again later."
+      );
+    }
+  }
+});
 
 bot.onText(/\/workout_plan/, async (msg) => {
   const userRepo = AppDataSource.getRepository(WorkoutPlan);
