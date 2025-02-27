@@ -12,15 +12,17 @@ import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import branch from "./src/routes/branch"
 import { handleMessage } from "./src/service/telegram.service";
-import Promotions from "./src/routes/promotion";
-import { Promotion } from "./src/entity/promotion.entity";
+import Promotion from "./src/routes/promotion";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan";
+import workout from "./src/routes/workout"
 import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
 import { Coupon } from "./src/entity/coupon.entity";
-
+import {NewsAnnouncements} from "./src/entity/new.entity"
+import { Branch} from "./src/entity/branch.entity";
+import { Branch_Contact } from "./src/entity/branch_contact.entity";
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -46,11 +48,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
+app.use("/api/promotion", Promotion);
 app.use("/api/branch", branch);
-app.use("/api/promotion", Promotions);
+app.use("/api/promotion",Promotion);
 
 app.use("/api/coupon", coupon);
-app.use("/api/workout", workoutPlan)
+app.use("/api/workout_plan", workoutPlan)
+app.use("/api/workout", workout)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -62,13 +66,19 @@ const commands = [
   { command: "/contact", description: "Get contact information" },
   { command: "/promotion", description: "See current promotions" },
   { command: "/feedback", description: "Submit feedback" },
-  { command: "/image", description: "Send an image" },
+  { command: "/news", description: "Send an news" },
   { command: "/text", description: "Send a text message" },
   { command: "/coupon", description: "Send a coupon" },
   { command: "/list", description: "Send a list" },
   { command: "/table", description: "Send a table" },
   { command: "/options", description: "Send options" },
   { command: "/workout_plan", description: "Send list" },
+  { command: "✅ /promotion", description: "See current promotions" },
+  { command: "🏋️/workout_plan", description: "Send list" },
+  { command: "📋/branch", description: "Send list of branch" },
+  { command: "🎟/coupon", description: "Send list of coupon" },
+  { command: "/activity", description: "Send list of activity" },
+
 
 ];
 
@@ -99,7 +109,6 @@ bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
 });
 
-
 bot.onText(/\/promotion/, async (msg) => {
   const userRepo = AppDataSource.getRepository(Promotion);
   try {
@@ -128,6 +137,134 @@ bot.onText(/\/promotion/, async (msg) => {
 });
 
 
+bot.onText(/\/news/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(NewsAnnouncements);
+  try {
+
+    const newsList = await userRepo.find({
+      order: { created_at: "DESC" }
+    });
+
+    if (newsList.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No news found.");
+    }
+
+    const newsText = newsList
+      .map((item, index) =>
+        `🔥 *News ${index + 1}* 🔥\n` +
+        `🏷️ *${item.title}*\n` +
+        `💬 ${item.content}\n` +
+        `📍 *${item.location}*\n` +
+        `📝 *${item.description}*\n` +
+        `📢 *${item.message}*\n` +
+        `📌 *Status:* ${item.status}\n` +
+        `📅 *Published on:* ${item.published_date}`
+      )
+      .join('\n\n');
+
+    const previewText = newsText.length > 900 ? newsText.substring(0, 900) + '...\n\n🔗 More news available.' : newsText;
+
+    bot.sendPhoto(
+      msg.chat.id,
+      "https://picsum.photos/seed/picsum/200/300",
+      { caption: previewText, parse_mode: "Markdown" }
+    );
+  } catch (err) {
+    console.error("Error fetching news", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch news. Please try again later.");
+  }
+});
+
+
+
+
+
+  
+  
+  
+
+
+bot.onText(/\/branch/, async (msg) => {
+  const userRepo = AppDataSource.getRepository(Branch);
+
+  try {
+    const branches = await userRepo.find({
+      relations: {
+        phone_numbers: true,
+      },
+      order: { id: "DESC" },
+    });
+
+    if (branches.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branches found.");
+    }
+
+    // Create inline buttons for each branch
+    const display = branches.map((branch) => [
+      {
+        text: `🔥 ${branch.name}`,
+        callback_data:`branch_${branch.id}`, // Corrected template literals
+      },
+    ]);
+
+    bot.sendMessage(msg.chat.id, "Choose a Branch:", {
+      reply_markup: {
+        inline_keyboard: display,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching branches:", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+  }
+});
+
+
+
+  
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const data = callbackQuery.data;
+
+  if (!msg || !data) {
+    return bot.sendMessage(callbackQuery.from.id, "Invalid selection. Please try again.");
+  }
+
+  if (data.startsWith("branch_")) {
+    const branchId = data.split("_")[1]; // Extract ID
+
+    const contactRepo = AppDataSource.getRepository(Branch_Contact);
+
+    try {
+      const branch_contacts = await contactRepo.find({
+        where: { branch: { id: branchId } },
+        relations: ["branch"],
+        order: { id: "ASC" },
+      });
+
+      if (branch_contacts.length === 0) {
+        return bot.sendMessage(msg.chat.id, "No contacts found for this branch.");
+      }
+
+      const buttons = branch_contacts
+        .map(
+          (contacts, index) =>
+            // `🔥 ${index + 1} 🔥\n` +
+          ` 🎯${contacts.branch.id}` + `${contacts.branch.name}\n`+
+            `📞 Phone: ${contacts.phone_number}\n`+
+            ` Location: ${contacts.branch.location}\n`
+        )
+        .join("\n");
+
+      bot.sendMessage(msg.chat.id, `Contacts in this branch:\n\n${buttons}`);
+    } catch (err) {
+      console.error("Error fetching contacts:", err);
+      bot.sendMessage(
+        msg.chat.id,
+        "Failed to fetch branch contacts. Please try again later."
+      );
+    }
+  }
+});
 
 bot.onText(/\/workout_plan/, async (msg) => {
   const userRepo = AppDataSource.getRepository(WorkoutPlan);
