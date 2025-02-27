@@ -64,36 +64,15 @@ const bot = new telegramBot(token, { polling: true });
 const commands = [
   { command: "/start", description: "Start the bot and get command list" },
   { command: "/help", description: "Get help and usage instructions" },
-  { command: "/contact", description: "Get contact information" },
-  { command: "/promotion", description: "See current promotions" },
-  { command: "/feedback", description: "Submit feedback" },
   { command: "/news", description: "Send an news" },
-  // { command: "/text", description: "Send a text message" },
-  // { command: "/link", description: "Send a link" },
-  // { command: "/list", description: "Send a list" },
-  // { command: "/table", description: "Send a table" },
-  // { command: "/options", description: "Send options" },
   { command: "/workoutplan", description: "Send list" },
+  { command: "/branch", description: "Send list of branch" },
   { command: "/promotion", description: "See current promotions" },
   { command: "/workoutplan", description: "Send list" },
   { command: "/branch", description: "Send list of branch" },
   { command: "/coupon", description: "Send list of coupon" },
-=======
-  { command: "/text", description: "Send a text message" },
-  { command: "/coupon", description: "Send a coupon" },
-  { command: "/list", description: "Send a list" },
-  { command: "/table", description: "Send a table" },
-  { command: "/options", description: "Send options" },
-  { command: "/workout_plan", description: "Send list" },
-  { command: "✅ /promotion", description: "See current promotions" },
-  { command: "🏋️/workout_plan", description: "Send list" },
-  { command: "📋/branch", description: "Send list of branch" },
-  { command: "🎟/coupon", description: "Send list of coupon" },
   { command: "/activity", description: "Send list of activity" },
   { command: "/membership", description: "Send list of membership" },
-
-
-
 ];
 
 // Set bot commands in Telegram
