@@ -3,7 +3,7 @@ import { Branch } from "./branch.entity";
 
 @Entity()
 export class Branch_Contact {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn()
   id: string;
 
   @ManyToOne(() => Branch, (branch) => branch.phone_numbers) 
