@@ -6,26 +6,25 @@ import { RoleEnum, RoleType } from '../common';
 
 export const register = async (req: Request, res: Response) => {
   const userRepo = AppDataSource.getRepository(UserInfo);
-  const { name, email, password } = req.body;
+  const { name, email} = req.body;
 
-  if (!name || !email || !password) {
+  if (!name || !email) {
     return res.status(500).json({
       message: "something wrong",
     });
   }
 
-  const validUser = await userRepo.findOne({ where: { userEmail: email } });
+  const validUser = await userRepo.findOne({ where: { email: email } });
   if (validUser) {
     return res.status(400).json({
       message: "user already exist!",
     });
   }
 
-  const hashPassword = await encryptPassword(password);
+  // const hashPassword = await encryptPassword(password);
   const user = new UserInfo();
-  user.name = name;
-  user.userEmail = email;
-  user.password = hashPassword;
+  user.first = name;
+  user.email = email;
 
   await userRepo.save(user);
 
@@ -45,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
       });
     }
     const userRepo = AppDataSource.getRepository(UserInfo);
-    const user = await userRepo.findOne({ where: { userEmail :email } });
+    const user = await userRepo.findOne({ where: {email :email } });
 
     if (!user) {
       return res.status(400).json({
@@ -59,10 +58,10 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const isPasswordValid = comparePassword(user.password, password);
-    if (!user || !isPasswordValid) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // const isPasswordValid = comparePassword(user.email);
+    // if (!user || !isPasswordValid) {
+    //   return res.status(404).json({ message: "User not found" });
+    // }
     const token = generateToken({ id: user.id, role: user.role as RoleType });
     res.cookie('token', token, {
       httpOnly: true,
