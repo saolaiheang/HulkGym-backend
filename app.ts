@@ -24,6 +24,7 @@ import { NewsAnnouncements } from "./src/entity/new.entity"
 import { Branch } from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import { Promotion } from "./src/entity/promotion.entity";
+import {MembershipPlan} from "./src/entity/membership.entity"
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -69,8 +70,7 @@ const commands = [
   { command: "/branch", description: "Send list of branch" },
   { command: "/coupon", description: "Send list of coupon" },
   { command: "/activity", description: "Send list of activity" },
-
-
+  { command: "/membership", description: "Send list of membership" },
 ];
 
 // Set bot commands in Telegram
@@ -173,7 +173,35 @@ bot.onText(/\/news/, async (msg) => {
   }
 });
 
+bot.onText(/\/membership/, async (msg) => {
+  const membershipRepo = AppDataSource.getRepository(MembershipPlan);
+  try {
+    const membershipList = await membershipRepo.find({
+      order: { created_at: "DESC" }
+    });
 
+    if (membershipList.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No membership plans found.");
+    }
+
+    const membershipText = membershipList
+      .map(
+        (item, index) =>
+          `🔥 *Plan ${index + 1}* 🔥\n` +
+          `🏷️ *Price:* $${item.price}\n` +
+          `⭐ *Features:*\n${(item.features ?? [])
+            .map((feature) => `- ${feature}`)
+            .join("\n")}`
+      )
+      .join("\n\n");
+      console.log(membershipList)
+
+    bot.sendMessage(msg.chat.id,`${membershipText}`);
+  } catch (err) {
+    console.error("Error fetching membership plans", err);
+    bot.sendMessage(msg.chat.id, "Failed to fetch membership plans. Please try again later.");
+  }
+});
 
 
 
