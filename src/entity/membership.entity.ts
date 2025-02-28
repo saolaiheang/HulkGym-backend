@@ -8,7 +8,7 @@ import {
 
 @Entity('membership_plan')
 export class MembershipPlan {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: string; 
 
     @Column({ type: 'varchar', length: 255, unique: true, nullable: false }) 

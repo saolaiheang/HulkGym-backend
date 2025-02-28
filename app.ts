@@ -12,7 +12,7 @@ import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import branch from "./src/routes/branch"
 import { handleMessage } from "./src/service/telegram.service";
-import Promotion from "./src/routes/promotion";
+import Promotions from "./src/routes/promotion";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan";
 import workout from "./src/routes/workout"
@@ -24,6 +24,7 @@ import {NewsAnnouncements} from "./src/entity/new.entity"
 import { Branch} from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
+import { Promotion } from "./src/entity/promotion.entity";
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -49,9 +50,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
-app.use("/api/promotion", Promotion);
+app.use("/api/promotion", Promotions);
 app.use("/api/branch", branch);
-app.use("/api/promotion",Promotion);
 
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
@@ -287,7 +287,7 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 });
 
-bot.onText(/\/workout_plan/, async (msg) => {
+bot.onText(/\/workoutplan/, async (msg) => {
   const userRepo = AppDataSource.getRepository(WorkoutPlan);
   try {
     const workout_plans = await userRepo.find({
