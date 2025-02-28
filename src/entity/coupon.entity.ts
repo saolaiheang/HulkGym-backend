@@ -4,7 +4,9 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToOne,
 } from 'typeorm';
+import { UserInfo } from './user.entity';
 @Entity('coupon')
 export class Coupon {
     @PrimaryGeneratedColumn('uuid')
@@ -30,5 +32,11 @@ export class Coupon {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToOne(() => UserInfo, (user) => user.coupon)
+  user: UserInfo[];
+
+
+
 
 }
