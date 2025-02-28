@@ -25,6 +25,7 @@ import { Branch } from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import { Promotion } from "./src/entity/promotion.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
+import { Promotion } from "./src/entity/promotion.entity";
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -52,6 +53,7 @@ app.use("/api/auth", auth);
 app.use("/api/activity", activity);
 app.use("/api/promotion", Promotions);
 app.use("/api/branch", branch);
+
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
 app.use("/api/workout", workout)
@@ -292,7 +294,7 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 });
 
-bot.onText(/\/workout_plan/, async (msg) => {
+bot.onText(/\/workoutplan/, async (msg) => {
   const userRepo = AppDataSource.getRepository(WorkoutPlan);
   try {
     const workout_plans = await userRepo.find({
