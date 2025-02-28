@@ -12,7 +12,7 @@ import activity from "./src/routes/activity";
 import telegramBot from "node-telegram-bot-api";
 import branch from "./src/routes/branch"
 import { handleMessage } from "./src/service/telegram.service";
-import Promotion from "./src/routes/promotion";
+import Promotions from "./src/routes/promotion";
 import coupon from "./src/routes/coupon";
 import workoutPlan from "./src/routes/workout_plan";
 import workout from "./src/routes/workout"
@@ -20,9 +20,10 @@ import { WorkoutPlan } from "./src/entity/workout_plan.entity";
 import { Workout } from "./src/entity/workout.entity";
 import { Exercise } from "./src/entity/exercise.entity";
 import { Coupon } from "./src/entity/coupon.entity";
-import {NewsAnnouncements} from "./src/entity/new.entity"
-import { Branch} from "./src/entity/branch.entity";
+import { NewsAnnouncements } from "./src/entity/new.entity"
+import { Branch } from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
+import { Promotion } from "./src/entity/promotion.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
 
 
@@ -49,10 +50,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes setuphttps://fboxmschac.sharedwithexpose.com
 app.use("/api/auth", auth);
 app.use("/api/activity", activity);
-app.use("/api/promotion", Promotion);
+app.use("/api/promotion", Promotions);
 app.use("/api/branch", branch);
-app.use("/api/promotion",Promotion);
-
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
 app.use("/api/workout", workout)
@@ -65,10 +64,9 @@ const commands = [
   { command: "/start", description: "Start the bot and get command list" },
   { command: "/help", description: "Get help and usage instructions" },
   { command: "/news", description: "Send an news" },
-  { command: "/workoutplan", description: "Send list" },
-  { command: "/branch", description: "Send list of branch" },
+  { command: "/options", description: "Send options" },
   { command: "/promotion", description: "See current promotions" },
-  { command: "/workoutplan", description: "Send list" },
+  { command: "/workout_plan", description: "Send list" },
   { command: "/branch", description: "Send list of branch" },
   { command: "/coupon", description: "Send list of coupon" },
   { command: "/activity", description: "Send list of activity" },
@@ -112,10 +110,17 @@ bot.onText(/\/promotion/, async (msg) => {
       return bot.sendMessage(msg.chat.id, "No branch found.");
     }
     for (const promotion of promotions) {
+      const validUntilDate = new Date(promotion.valid_until);
+      const formattedDate = validUntilDate.toLocaleDateString("en-US", {
+        weekday: "short",  // e.g., "Mon"
+        year: "numeric",   // e.g., "2025"
+        month: "short",    // e.g., "Mar"
+        day: "2-digit"     // e.g., "31"
+      });
       const message = `🔥 *${promotion.title}* 🔥\n` +
         `💬 ${promotion.offer_description}\n` +
         `🎯 Discount: ${promotion.discount_percentage}%\n` +
-        `⏳ Valid Until: ${promotion.valid_until}\n`;
+        `⏳ Valid Until: ${formattedDate}\n`;
 
       if (promotion.img_url) {
         await bot.sendPhoto(msg.chat.id, promotion.img_url, { caption: message, parse_mode: "Markdown" });
@@ -200,9 +205,9 @@ bot.onText(/\/membership/, async (msg) => {
 
 
 
-  
-  
-  
+
+
+
 
 
 bot.onText(/\/branch/, async (msg) => {
@@ -224,7 +229,7 @@ bot.onText(/\/branch/, async (msg) => {
     const display = branches.map((branch) => [
       {
         text: `🔥 ${branch.name}`,
-        callback_data:`branch_${branch.id}`, // Corrected template literals
+        callback_data: `branch_${branch.id}`, // Corrected template literals
       },
     ]);
 
@@ -241,7 +246,7 @@ bot.onText(/\/branch/, async (msg) => {
 
 
 
-  
+
 bot.on("callback_query", async (callbackQuery) => {
   const msg = callbackQuery.message;
   const data = callbackQuery.data;
@@ -270,8 +275,8 @@ bot.on("callback_query", async (callbackQuery) => {
         .map(
           (contacts, index) =>
             // `🔥 ${index + 1} 🔥\n` +
-          ` 🎯${contacts.branch.id}` + `${contacts.branch.name}\n`+
-            `📞 Phone: ${contacts.phone_number}\n`+
+            ` 🎯${contacts.branch.id}` + `${contacts.branch.name}\n` +
+            `📞 Phone: ${contacts.phone_number}\n` +
             ` Location: ${contacts.branch.location}\n`
         )
         .join("\n");
@@ -441,17 +446,27 @@ bot.onText(/\/coupon/, async (msg) => {
     if (coupons.length === 0) {
       return bot.sendMessage(msg.chat.id, "No branch found.");
     }
+
     for (const coupon of coupons) {
+      const validUntilDate = new Date(coupon.valid_until);
+      const formattedDate = validUntilDate.toLocaleDateString("en-US", {
+        weekday: "short",  // e.g., "Mon"
+        year: "numeric",   // e.g., "2025"
+        month: "short",    // e.g., "Mar"
+        day: "2-digit"     // e.g., "31"
+      });
       const message = `🎫 *${coupon.title}* 🎫\n` +
         `Offer: ${coupon.offer}\n` +
-        ` Valid Until: ${coupon.valid_until}%\n` +
+        ` Valid Until: ${formattedDate}\n` +
         ` Terms: ${coupon.terms}\n` +
         `🔥 Claim your free trial now & kickstart your fitness journey! 💪`;
-      bot.sendMessage(msg.chat.id, message);
+      bot.sendPhoto(msg.chat.id, "https://res.cloudinary.com/duytuwd8w/image/upload/c_thumb,w_300/small_1_bb19429143", {
+        caption: message, parse_mode: "Markdown" 
+      });
     }
   } catch (err) {
     console.error("Error fetching workouts:", err);
-    bot.sendMessage(msg.chat.id, "Failed to fetch workouts. Please try again later.");
+    bot.sendMessage(msg.chat.id, "Failed to fetch coupon. Please try again later.");
   }
 });
 
