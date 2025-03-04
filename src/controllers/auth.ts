@@ -6,13 +6,13 @@ import { RoleEnum, RoleType } from '../common';
 
 export const register = async (req: Request, res: Response) => {
   const userRepo = AppDataSource.getRepository(UserInfo);
-  const { name, email} = req.body;
+  const { firstName, lastName, chatId, email,phone} = req.body;
 
-  if (!name || !email) {
-    return res.status(500).json({
-      message: "something wrong",
-    });
-  }
+  // if (!name || !email) {
+  //   return res.status(500).json({
+  //     message: "something wrong",
+  //   });
+  // }
 
   const validUser = await userRepo.findOne({ where: { email: email } });
   if (validUser) {
@@ -23,8 +23,11 @@ export const register = async (req: Request, res: Response) => {
 
   // const hashPassword = await encryptPassword(password);
   const user = new UserInfo();
-  user.first = name;
+  user.firstName = firstName;
+  user.lastName = lastName;
+  user.chatId = chatId;
   user.email = email;
+  user.phone = phone;
 
   await userRepo.save(user);
 
