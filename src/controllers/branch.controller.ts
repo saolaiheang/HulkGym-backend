@@ -1,17 +1,15 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../config";
 import { Branch } from "../entity/branch.entity";
-import { v4 as uuidv4 } from "uuid";
 
 export const addBranch = async (req: Request, res: Response) => {
   const branchRepository = AppDataSource.getRepository(Branch);
   try {
     const { name, location, image } = req.body;
-    const id = uuidv4();
-    console.log(id);
+
 
     const branch = new Branch();
-     branch.id=id,
+     branch.id,
       branch.name= name,
       branch.location=location,
       branch.image=image,
