@@ -9,12 +9,12 @@ export const addBranch = async (req: Request, res: Response) => {
     const { name, location, image } = req.body;
     const id = uuidv4();
     console.log(id);
-
     const branch = new Branch();
      branch.id=id,
       branch.name= name,
       branch.location=location,
       branch.image=image,
+  
 
       await branchRepository.save(branch);
     return res.status(201).json({ message: "Branch added successfully" });
@@ -27,18 +27,8 @@ export const addBranch = async (req: Request, res: Response) => {
 export const getBranch = async (req: Request, res: Response) => {
   const branchRepository = AppDataSource.getRepository(Branch);
   try {
-    const branchs = await branchRepository.find();
-    // ({
-
-    //   select: {
-    //     id: true,
-    //     name: true,
-    //     location: true,
-    //     image: true,
-    //   },
-    // });
-
-    // console.log(branchs)
+    const branchs = await branchRepository.find(
+    );
     return res.status(200).json({ message: "Success", branchs });
   } catch (err) {
     console.log(err);
