@@ -19,6 +19,6 @@ export class Branch {
   @OneToMany(() => Branch_User, (branch_user) => branch_user.branch)
   branch_users: Branch_User[];
 
-  @OneToMany(() => Branch_Contact, (phone_number) => phone_number.branch) 
+  @OneToMany(() => Branch_Contact, (branch_contact) => branch_contact.branch)
   phone_numbers: Branch_Contact[];
 }

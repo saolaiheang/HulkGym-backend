@@ -26,12 +26,14 @@ import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import { Promotion } from "./src/entity/promotion.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
 import router from "./src/routes/membership"
+import ExerciseS from "./src/routes/exercise"
 
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN || "";
 
 console.log(token);
+
 
 var corsOptions = {
   origin: "*",
@@ -58,6 +60,7 @@ app.use("/api/membership",router)
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
 app.use("/api/workout", workout)
+app.use("/api/exercise", ExerciseS)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -204,19 +207,13 @@ bot.onText(/\/membership/, async (msg) => {
   }
 });
 
-
-
-
-
-
-
 bot.onText(/\/branch/, async (msg) => {
   const userRepo = AppDataSource.getRepository(Branch);
 
   try {
     const branches = await userRepo.find({
       relations: {
-        phone_numbers: true,
+        phone_numbers: true, // Assuming 'phone_numbers' is related to the branch
       },
       order: { id: "DESC" },
     });
@@ -229,7 +226,7 @@ bot.onText(/\/branch/, async (msg) => {
     const display = branches.map((branch) => [
       {
         text: `🔥 ${branch.name}`,
-        callback_data: `branch_${branch.name}`,
+        callback_data: `branch_${branch.id}`, // Pass the branch ID
       },
     ]);
 
@@ -248,60 +245,81 @@ bot.on("callback_query", async (callbackQuery) => {
   const msg = callbackQuery.message;
   const data = callbackQuery.data;
 
-if (!msg || !data) {
-  return bot.sendMessage(callbackQuery.from.id, "Invalid selection. Please try again.");
-}
+  if (!msg || !data) {
+    return bot.sendMessage(callbackQuery.from.id, "Invalid selection. Please try again.");
+  }
+
+  console.log("Callback data received:", data); // Log the callback data for debugging
 
   if (data.startsWith("branch_")) {
-    const branchId = data.split("_")[1];
+    const branchId = data.replace("branch_", ""); // Extract the branch ID from the callback data
+    console.log("Extracted branch ID:", branchId); // Log the branch ID for debugging
 
+    const branchRepo = AppDataSource.getRepository(Branch);
     const contactRepo = AppDataSource.getRepository(Branch_Contact);
-    const userRepo = AppDataSource.getRepository(Branch);
 
-  
     try {
-      const branch = await userRepo.findOne({ where: { id: branchId } });
+      // Fetch the branch using the branchId
+      const branch = await branchRepo.findOne({
+        where: { id: branchId }, // Query the branch by its ID
+      });
 
       if (!branch) {
+        console.log("Branch not found:", branchId);
         return bot.sendMessage(msg.chat.id, "Branch not found.");
       }
-  
-      // Send branch image with details
-      if (branch.image) {
-        await bot.sendPhoto(msg.chat.id, branch.image, {
-          caption: `*${branch.name}*\n\n*Location:* ${branch.location}`,
+
+      const { name, location, image } = branch;
+
+      // Send branch image, name, and location first
+      if (image) {
+        await bot.sendPhoto(msg.chat.id, image, {
+          caption: `*${name}*\n\n📍 *Location:* ${location}`,
+          parse_mode: "Markdown",
+        });
+      } else {
+        // If no image, send the text description of the branch
+        bot.sendMessage(msg.chat.id, `*${name}*\n\n📍 *Location:* ${location}`, {
           parse_mode: "Markdown",
         });
       }
 
-      // Fetch branch contacts
+      // Fetch contacts related to the branch
       const branch_contacts = await contactRepo.find({
-        where: { branch: { id: branchId } },
-        relations: ["branch"],
-        order: { id: "ASC" },
+        where: { branch: { id: branchId } }, // Ensure we query by branchId
+        relations: ["branch"], // Load the branch relation
+        order: { id: "ASC" }, // Order by id ascending
       });
+
+      console.log("Fetched contacts:", branch_contacts); // Log fetched contacts for debugging
 
       if (branch_contacts.length === 0) {
         return bot.sendMessage(msg.chat.id, "No contacts found for this branch.");
       }
 
-      // Format contact details
-      const contactDetails = branch_contacts
+      // Prepare the contact list and include the phone number for each contact
+      const contactsInfo = branch_contacts
         .map(
           (contact, index) =>
-            `🔥 *Branch:* ${contact.branch.name}\n📞 *Phone:* ${contact.phone_number}\n📍 *Location:* ${contact.branch.location}\n`
+            `🎯 *${index + 1}. ${contact.branch.name}*\n` +
+            `📞 *Phone:* ${contact.phone_number}\n` 
+      
         )
         .join("\n");
 
-      bot.sendMessage(msg.chat.id, `Contacts in this branch:\n\n${contactDetails}`, {
+
+      // Send the contact information
+      bot.sendMessage(msg.chat.id, `📢 *Contacts in this branch:*\n\n${contactsInfo}`, {
         parse_mode: "Markdown",
       });
+
     } catch (err) {
-      console.error("Error fetching contacts:", err);
-      bot.sendMessage(msg.chat.id, "Failed to fetch branch contacts. Please try again later.");
+      console.error("Error fetching branch or contacts:", err);
+      bot.sendMessage(msg.chat.id, "Failed to fetch branch or contacts. Please try again later.");
     }
   }
 });
+
 
 bot.onText(/\/workoutplan/, async (msg) => {
   const userRepo = AppDataSource.getRepository(WorkoutPlan);

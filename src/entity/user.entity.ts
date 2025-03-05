@@ -73,16 +73,19 @@ export class UserInfo {
   id: string;
 
   @Column({ nullable: false })
-  first: string;
+  chatId: string;
 
   @Column({ nullable: false })
-  last: string;
+  firstName: string;
+
+  @Column({ nullable: false })
+  lastName: string;
 
   @Column({ nullable: false })
   email: string;
 
   @Column({ nullable: false })
-  phone: number;
+  phone: string;
   
   @OneToOne(() => Coupon, (coupon) => coupon.user, { nullable: true })
   coupon: Coupon[];

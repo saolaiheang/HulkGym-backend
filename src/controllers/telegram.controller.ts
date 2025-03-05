@@ -13,12 +13,13 @@ export const checkTelegramData = async (req: Request, res: Response) => {
   console.log("------ 1 ", userInfo)
   const { TELEGRAM_TOKEN } = process.env
 
-  const firstName = userInfo?.first_name || ""
-  const userName = userInfo?.username || ""
+  const firstName = userInfo?.firstName || ""
+  const lastName = userInfo?.lastName || ""
+  const chatId = userInfo?.chatId || ""
   const userId = userInfo?.id || ""
   
   console.log("------ ", initData == undefined)
-  if (initData == undefined || !firstName || !userId || !userName) {
+  if (initData == undefined || !firstName || !userId) {
     return res.status(400).json({ success: false, message: 'Invalid data' });
   }
   try {
@@ -34,9 +35,11 @@ export const checkTelegramData = async (req: Request, res: Response) => {
       }
 
       const user = new UserInfo();
-      user.first = firstName;
-      user.email = userId;
-      user.phone = userName;
+      user.firstName = firstName;
+      user.lastName = lastName;
+      user.chatId = chatId;
+      user.email = "";
+      user.phone = "";
 
       await userRepo.save(user);
 
