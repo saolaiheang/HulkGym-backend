@@ -25,6 +25,7 @@ import { Branch } from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import { Promotion } from "./src/entity/promotion.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
+import router from "./src/routes/membership"
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -52,6 +53,7 @@ app.use("/api/auth", auth);
 app.use("/api/activity", activity);
 app.use("/api/promotion", Promotions);
 app.use("/api/branch", branch);
+app.use("/api/membership",router)
 
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
@@ -67,7 +69,7 @@ const commands = [
   { command: "/news", description: "Send an news" },
   { command: "/options", description: "Send options" },
   { command: "/promotion", description: "See current promotions" },
-  { command: "/workout_plan", description: "Send list" },
+  { command: "/workoutplan", description: "Send list" },
   { command: "/branch", description: "Send list of branch" },
   { command: "/coupon", description: "Send list of coupon" },
   { command: "/activity", description: "Send list of activity" },
@@ -134,8 +136,6 @@ bot.onText(/\/promotion/, async (msg) => {
     bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.")
   }
 });
-
-
 bot.onText(/\/news/, async (msg) => {
   const userRepo = AppDataSource.getRepository(NewsAnnouncements);
   try {
@@ -192,7 +192,7 @@ bot.onText(/\/membership/, async (msg) => {
           `🏷️ *Price:* $${item.price}\n` +
           `⭐ *Features:*\n${(item.features ?? [])
             .map((feature) => `- ${feature}`)
-            .join("\n")}`
+            .join("\n")}`   
       )
       .join("\n\n");
       console.log(membershipList)
