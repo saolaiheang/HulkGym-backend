@@ -25,6 +25,7 @@ import { Branch } from "./src/entity/branch.entity";
 import { Branch_Contact } from "./src/entity/branch_contact.entity";
 import { Promotion } from "./src/entity/promotion.entity";
 import {MembershipPlan} from "./src/entity/membership.entity"
+import ExerciseS from "./src/routes/exercise"
 
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -57,6 +58,7 @@ app.use("/api/branch", branch);
 app.use("/api/coupon", coupon);
 app.use("/api/workout_plan", workoutPlan)
 app.use("/api/workout", workout)
+app.use("/api/exercise", ExerciseS)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
